@@ -18,6 +18,7 @@ public class ResourceController {
     @GetMapping("/userinfo")
     public Map<String,Object> userinfo(@AuthenticationPrincipal Jwt jwt){
 
+        String userId = jwt.getSubject();
         return resourceService.getUserInfo(jwt);
     }
 }

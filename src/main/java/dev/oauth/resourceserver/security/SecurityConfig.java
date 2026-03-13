@@ -14,12 +14,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public").permitAll()
+                        // 1. NextAuth가 호출하는 /userinfo 경로를 허용 (인증 필요)
+                        .requestMatchers("/userinfo").authenticated()
+                        // 2. 기존 API 경로들 (필요에 따라 유지)
                         .requestMatchers("/api/me").authenticated()
                         .requestMatchers("/api/profile").hasAuthority("SCOPE_profile")
-                        .requestMatchers("/api/email").hasAuthority("SCOPE_email")
                         .anyRequest().authenticated()
                 )
+                // 3. JWT 기반 리소스 서버 설정 유지
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
         return http.build();

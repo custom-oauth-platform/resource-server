@@ -1,6 +1,18 @@
 spring:
   application:
     name: resource-server
+  datasource:
+    url: jdbc:mysql://localhost:3306/oauth_resource_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # 엔티티 수정 시 테이블 자동 업데이트
+      show-sql: true # 실행되는 SQL을 로그로 확인
+      properties:
+        hibernate:
+          format_sql: true # SQL 예쁘게 출력
   security:
     oauth2:
       resourceserver:

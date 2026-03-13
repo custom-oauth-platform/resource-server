@@ -1,54 +1,38 @@
 package dev.oauth.resourceserver.service;
 
+import dev.oauth.resourceserver.entity.MemberProfile;
+import dev.oauth.resourceserver.repository.MemberProfileRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor // 필드 주입을 위해 필수
 public class ResourceService {
 
-    public Map<String,Object> getUserInfo(Jwt jwt){
+    // 1. 레포지토리를 상단에 필드로 선언 (final 필수)
+    private final MemberProfileRepository memberProfileRepository;
 
+    public Map<String, Object> getUserInfo(Jwt jwt) {
         String userId = jwt.getSubject();
 
-        // 실제 DB 대신 Mock 데이터
-        Map<String,Object> userData = Map.of(
-                "name","홍길동",
-                "email","hong@test.com",
-                "birth","1999-01-01",
-                "gender","male"
-        );
+        // 2. 주입받은 필드를 사용하여 조회
+        MemberProfile profile = memberProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("프로필 정보를 찾을 수 없습니다."));
 
-        Map<String,Object> result = new HashMap<>();
-
-        List<String> scopes = extractScopes(jwt);
-
-        if(scopes.contains("profile")){
-            result.put("name",userData.get("name"));
-            result.put("birth",userData.get("birth"));
-            result.put("gender",userData.get("gender"));
-        }
-
-        if(scopes.contains("email")){
-            result.put("email",userData.get("email"));
-        }
-
-        result.put("sub",userId);
-
+        Map<String, Object> result = new HashMap<>();
+        result.put("sub", profile.getUserId());
+        result.put("name", profile.getName());
+        result.put("gender", profile.getGender());
+        result.put("birthdate", profile.getBirthdate());
         return result;
     }
 
-    private List<String> extractScopes(Jwt jwt){
-
-        Object scope = jwt.getClaims().get("scope");
-
-        if(scope instanceof String scopeString){
-            return List.of(scopeString.split(" "));
-        }
-
-        return List.of();
+    public MemberProfile getMemberProfile(String userId) {
+        return memberProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Member not found with id: " + userId));
     }
 }
