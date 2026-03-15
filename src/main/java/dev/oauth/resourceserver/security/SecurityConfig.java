@@ -16,7 +16,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/public").permitAll()
                         .requestMatchers("/api/me").authenticated()
-                        .requestMatchers("/api/profile").hasAuthority("SCOPE_profile")
+                        .requestMatchers("/api/profile").hasAnyAuthority("SCOPE_name", "SCOPE_gender", "SCOPE_birthdate", "SCOPE_email")
+                        .requestMatchers("/api/mypage").authenticated()
                         .requestMatchers("/api/email").hasAuthority("SCOPE_email")
                         .anyRequest().authenticated()
                 )
