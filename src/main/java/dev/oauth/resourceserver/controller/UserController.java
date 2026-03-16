@@ -4,10 +4,8 @@ import dev.oauth.resourceserver.profile.dto.MyPageResponse;
 import dev.oauth.resourceserver.profile.service.ProfileService;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,47 +21,7 @@ public class UserController {
         this.profileService = profileService;
     }
 
-    @GetMapping(value = "/public", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> publicEndpoint() {
-        return Map.of(
-                "message", "public ok",
-                "authenticated", false
-        );
-    }
-
-    @GetMapping(value = "/api/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> me(@AuthenticationPrincipal Jwt jwt) {
-        return Map.of(
-                "message", "authenticated user",
-                "sub", jwt.getSubject(),
-                "iss", jwt.getIssuer() != null ? jwt.getIssuer().toString() : null,
-                "scopes", extractScopes(jwt)
-        );
-    }
-
-    @GetMapping(value = "/api/profile", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> profile(@AuthenticationPrincipal Jwt jwt) {
-        return Map.of(
-                "message", "profile scope granted",
-                "sub", jwt.getSubject(),
-                "name", getStringClaim(jwt, "name"),
-                "preferred_username", getStringClaim(jwt, "preferred_username"),
-                "scopes", extractScopes(jwt)
-        );
-    }
-
-    @GetMapping(value = "/api/email", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> email(@AuthenticationPrincipal Jwt jwt) {
-        return Map.of(
-                "message", "email scope granted",
-                "sub", jwt.getSubject(),
-                "email", getStringClaim(jwt, "email"),
-                "email_verified", jwt.getClaim("email_verified"),
-                "scopes", extractScopes(jwt)
-        );
-    }
-
-    @GetMapping(value = "/api/mypage", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/mypage")
     public MyPageResponse myPage(@AuthenticationPrincipal Jwt jwt) {
         String userId = resolveUserId(jwt);
         Set<String> scopes = extractScopes(jwt);
@@ -77,7 +35,11 @@ public class UserController {
                     scopes.contains("birthdate")
             );
         } catch (IllegalArgumentException exception) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, exception.getMessage(), exception);
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    exception.getMessage(),
+                    exception
+            );
         }
     }
 
@@ -86,11 +48,6 @@ public class UserController {
         addScopes(scopes, jwt.getClaims().get("scope"));
         addScopes(scopes, jwt.getClaims().get("scp"));
         return Set.copyOf(scopes);
-    }
-
-    private String getStringClaim(Jwt jwt, String claimName) {
-        Object value = jwt.getClaims().get(claimName);
-        return value != null ? value.toString() : null;
     }
 
     private String resolveUserId(Jwt jwt) {
@@ -106,6 +63,11 @@ public class UserController {
         return jwt.getSubject();
     }
 
+    private String getStringClaim(Jwt jwt, String claimName) {
+        Object value = jwt.getClaims().get(claimName);
+        return value != null ? value.toString() : null;
+    }
+
     private void addScopes(Set<String> scopes, Object scopeClaim) {
         if (scopeClaim instanceof String scopeString) {
             for (String scope : scopeString.split(" ")) {
@@ -115,6 +77,7 @@ public class UserController {
             }
             return;
         }
+
         if (scopeClaim instanceof Collection<?> collection) {
             for (Object value : collection) {
                 if (value != null) {

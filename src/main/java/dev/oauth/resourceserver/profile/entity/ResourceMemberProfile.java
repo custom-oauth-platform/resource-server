@@ -1,17 +1,14 @@
 package dev.oauth.resourceserver.profile.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Entity
+@Getter
+@NoArgsConstructor
 @Table(name = "resource_member_profile")
 public class ResourceMemberProfile {
 
@@ -33,31 +30,4 @@ public class ResourceMemberProfile {
     private Gender gender;
 
     private LocalDate birthdate;
-
-    protected ResourceMemberProfile() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public LocalDate getBirthdate() {
-        return birthdate;
-    }
 }
